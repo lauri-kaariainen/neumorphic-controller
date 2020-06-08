@@ -8,7 +8,7 @@ class Knob extends Component {
     this.startAngle = (360 - props.degrees) / 2;
     this.endAngle = this.startAngle + props.degrees;
     this.margin = props.size * 0.15;
-    this.value = 0;
+    this.value = props.value || 0;
     this.currentDeg = Math.floor(
       this.convertRange(
         props.min,

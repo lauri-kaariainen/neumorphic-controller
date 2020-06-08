@@ -12,12 +12,15 @@ import { Knob } from "./components/Knob.js";
 import "./style/index.scss";
 
 const App = () => {
+  const [powerOn, setPowerOn] = useState(true);
+  const [warmnessChoise, setWarmnessChoise] = useState("warm");
+  const [brightnessValue, setBrightnessValue] = useState(100);
   return (
     <Fragment>
       <ul>
         <li>
           <label>
-            <input type="checkbox" name="" />
+            <input type="checkbox" name="poweron" checked={powerOn} />
             <div class="icon-box bigbox">
               {/* <i class="fa fa-home" aria-hidden="true" /> */}
               <span class="poweron" aria-hidden="true">
@@ -42,7 +45,11 @@ const App = () => {
         </li>
         <li>
           <label>
-            <input type="checkbox" name="" />
+            <input
+              type="checkbox"
+              name="warm"
+              checked={warmnessChoise === "warm"}
+            />
             <div class="icon-box">
               {/* <i class="fa fa-phone" aria-hidden="true" /> */}
               {/* <i class="poweroff" aria-hidden="true"/> */}
@@ -67,7 +74,11 @@ const App = () => {
         </li>
         <li>
           <label>
-            <input type="checkbox" name="" />
+            <input
+              type="checkbox"
+              name="cold"
+              checked={warmnessChoise === "cold"}
+            />
             <div class="icon-box">
               {/* <i class="fa fa-plane" aria-hidden="true" /> */}
               <span class="daytime" aria-hidden="true">
@@ -96,7 +107,7 @@ const App = () => {
           degrees={210}
           min={1}
           max={100}
-          value={0}
+          value={brightnessValue}
           size={110}
           color={true}
         />
