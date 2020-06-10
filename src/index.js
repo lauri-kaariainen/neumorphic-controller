@@ -94,11 +94,6 @@ const App = () => {
 
   return (
     <Fragment>
-      {"power: " + powerOn + " "}
-      {"warmness: " + warmnessChoise + " "}
-      {"bri: " + brightnessValue + " "}
-      {"lastcall: " + lastBrightnessChange}
-
       <ul>
         <li>
           <label>
@@ -190,7 +185,7 @@ const App = () => {
           numTicks={35}
           degrees={210}
           min={0}
-          max={255}
+          max={254}
           value={brightnessValue}
           size={110}
           color={true}
