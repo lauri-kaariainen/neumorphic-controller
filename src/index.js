@@ -1,4 +1,4 @@
-import { render, Fragment } from "preact";
+import {render, Fragment} from "preact";
 import {
   useReducer,
   useState,
@@ -7,20 +7,102 @@ import {
   useEffect
 } from "preact/hooks";
 
-import { Knob } from "./components/Knob.js";
+import {Knob} from "./components/Knob.js";
 
 import "./style/index.scss";
 
+const url = '/huehousecontrol/ajax/groups/2'
+
+window.lastBrightnessChange = 0;
+
 const App = () => {
   const [powerOn, setPowerOn] = useState(true);
-  const [warmnessChoise, setWarmnessChoise] = useState("warm");
-  const [brightnessValue, setBrightnessValue] = useState(100);
+  const [warmnessChoise, setWarmnessChoise] = useState(null);
+  const [brightnessValue, setBrightnessValue] = useState(null);
+  const [lastBrightnessChange, setLastBrightnessChange] = useState(new Date().getTime())
+
+  // if (window.lastBrightnessChange !== lastBrightnessChange) {
+  // console.log("lastBrightnessChange changed!!!");
+  // console.log("window:", window.lastBrightnessChange, "new:", lastBrightnessChange)
+  // }
+  // window.lastBrightnessChange = lastBrightnessChange
+
+  const getWarmnessAsCTNum = str =>
+    str === "warm" ? 495 :
+      str === "cold" ? 200 : 0;
+
+  //load initial state
+  useEffect(() =>
+    fetch(url)
+      .then(res => res.json())
+      .then(res => {
+        setBrightnessValue(res.state.bri)
+        setPowerOn(res.state.on)
+        // console.log(res.state.ct)
+        if (res.state.ct === getWarmnessAsCTNum("warm")) {
+          setWarmnessChoise("warm");
+        }
+        else if (res.state.ct === getWarmnessAsCTNum("cold")) {
+          setWarmnessChoise("cold");
+        }
+      })
+      .catch(err =>
+        alert("you should probably connect from inside corret NAT"))
+    , []);
+
+
+
+  const handlePowerClick = _ => {
+    setPowerOn(!powerOn);
+    fetch(url, {
+      method: "PUT"
+      , body: new URLSearchParams(`data={"status":{"on":${!powerOn}}}`)//=${!powerOn}`)
+    })
+      .then(e => e.body())
+      .then(e => console.log("put done", e))
+      .catch(e => console.log(e));
+  }
+
+  const handleWarmnessClick = warmness => {
+    setWarmnessChoise(warmness);
+    fetch(url, {
+      method: "PUT"
+      , body: new URLSearchParams(`data={"status":{"ct":${getWarmnessAsCTNum(warmness)},"transitiontime":0}}`)
+    })
+      .then(e => e.body())
+      .then(e => console.log("put done", e))
+      .catch(e => console.log(e));
+  }
+
+  function handleBrightnessChange(bri) {
+    const currTime = new Date().getTime();
+    // console.log("currtime:", currTime, "lastchange:", lastBrightnessChange, currTime - lastBrightnessChange)
+    if ((currTime - lastBrightnessChange) >= 600) {
+      setBrightnessValue(bri);
+      setLastBrightnessChange(new Date().getTime());
+      fetch(url, {
+        method: "PUT"
+        , body: new URLSearchParams(`data={"status":{"bri":${bri}}}`)//,"transitiontime":0}}`)
+      })
+        .then(e => console.log("put done", e))
+        .catch(e => console.error(e));
+    }
+    else {
+    }
+
+  }
+
   return (
     <Fragment>
+      {"power: " + powerOn + " "}
+      {"warmness: " + warmnessChoise + " "}
+      {"bri: " + brightnessValue + " "}
+      {"lastcall: " + lastBrightnessChange}
+
       <ul>
         <li>
           <label>
-            <input type="checkbox" name="poweron" checked={powerOn} />
+            <input type="checkbox" name="poweron" checked={powerOn} onClick={handlePowerClick} />
             <div class="icon-box bigbox">
               {/* <i class="fa fa-home" aria-hidden="true" /> */}
               <span class="poweron" aria-hidden="true">
@@ -49,6 +131,7 @@ const App = () => {
               type="checkbox"
               name="warm"
               checked={warmnessChoise === "warm"}
+              onClick={() => handleWarmnessClick("warm")}
             />
             <div class="icon-box">
               {/* <i class="fa fa-phone" aria-hidden="true" /> */}
@@ -78,6 +161,7 @@ const App = () => {
               type="checkbox"
               name="cold"
               checked={warmnessChoise === "cold"}
+              onClick={() => handleWarmnessClick("cold")}
             />
             <div class="icon-box">
               {/* <i class="fa fa-plane" aria-hidden="true" /> */}
@@ -102,15 +186,19 @@ const App = () => {
           </label>
         </li>
 
-        <Knob
+        {brightnessValue === null ? "" : <Knob
           numTicks={35}
           degrees={210}
-          min={1}
-          max={100}
+          min={0}
+          max={255}
           value={brightnessValue}
           size={110}
           color={true}
-        />
+          onChange={handleBrightnessChange}
+        /* force rerender with key, otherwise didn't rotate on value update. 
+        doesn't seem to have perf implications EDIT: had other implications*/
+        // key={brightnessValue}
+        />}
       </ul>
     </Fragment>
   );

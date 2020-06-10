@@ -1,4 +1,4 @@
-import { Component } from "preact";
+import {Component} from "preact";
 import "../style/Knob.scss";
 
 class Knob extends Component {
@@ -15,10 +15,10 @@ class Knob extends Component {
         props.max,
         this.startAngle,
         this.endAngle,
-        props.value
+        this.value
       )
     );
-    this.state = { deg: this.currentDeg };
+    this.state = {deg: this.currentDeg};
   }
 
   startDrag = e => {
@@ -46,9 +46,10 @@ class Knob extends Component {
           this.currentDeg
         )
       );
-      this.setState({ deg: this.currentDeg });
+      this.setState({deg: this.currentDeg});
       this.value = newValue;
-      // this.props.onChange(newValue);
+      if (this.props.onChange)
+        this.props.onChange(newValue);
     };
     document.addEventListener("mousemove", moveHandler);
     document.addEventListener("touchmove", moveHandler);
@@ -125,24 +126,23 @@ class Knob extends Component {
       //   this.currentDeg / 36 +
       //   "%))";
       oStyle.backgroundImage = `radial-gradient(100% 90%,
-        rgba(255,255,255,${this.value / 100}),#ebf5fc)`;
+        rgba(255,255,255,${this.value / this.props.max}),#ebf5fc)`;
     }
     iStyle.transform = "rotate(" + this.state.deg + "deg)";
 
     return (
       <div className="knob knobdiv" style={kStyle}>
-        {/* <div className="debug">{JSON.stringify(this.value)}</div> */}
         <div className="ticks">
           {this.props.numTicks
             ? this.renderTicks().map((tick, i) => (
-                <div
-                  key={i}
-                  className={
-                    "tick" + (tick.deg <= this.currentDeg ? " active" : "")
-                  }
-                  style={tick.tickStyle}
-                />
-              ))
+              <div
+                key={i}
+                className={
+                  "tick" + (tick.deg <= this.currentDeg ? " active" : "")
+                }
+                style={tick.tickStyle}
+              />
+            ))
             : null}
         </div>
         <div
@@ -168,4 +168,4 @@ Knob.defaultProps = {
   value: 0
 };
 
-export { Knob };
+export {Knob};
